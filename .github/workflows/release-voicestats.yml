@@ -1,0 +1,104 @@
+name: Release VoiceStats
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: "Version Tag (e.g. 1.0.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-full:
+    name: Build Full Source
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout voicestats branch
+        uses: actions/checkout@v7
+        with:
+          ref: voicestats
+
+      - name: Build Full Source ZIP
+        run: |
+          mkdir -p full_staging/voicestats
+          cp -r main.js src data full_staging/voicestats
+          cd full_staging
+          zip -r ../voicestats-full.zip voicestats/
+
+      - name: Upload Full Source Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: voicestats-full
+          path: voicestats-full.zip
+
+  build-obfuscated:
+    name: Build Obfuscated
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout voicestats branch
+        uses: actions/checkout@v7
+        with:
+          ref: voicestats
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Install JavaScript Obfuscator
+        run: npm install -g javascript-obfuscator
+
+      - name: Build Obfuscated ZIP
+        run: |
+          mkdir -p obfuscated_staging/voicestats
+          cp -r main.js src data obfuscated_staging/voicestats
+
+          # Obfuscate main.js
+          javascript-obfuscator obfuscated_staging/voicestats/main.js --output obfuscated_staging/voicestats/main.js --compact true --control-flow-flattening true --dead-code-injection true --string-array true --string-array-encoding 'base64' --identifier-names-generator 'hexadecimal'
+
+          # Obfuscate all JS files in src
+          find obfuscated_staging/voicestats/src -name "*.js" -exec javascript-obfuscator {} --output {} --compact true --control-flow-flattening true --dead-code-injection true --string-array true --string-array-encoding 'base64' --identifier-names-generator 'hexadecimal' \;
+
+          cd obfuscated_staging
+          zip -r ../voicestats.zip voicestats/
+
+      - name: Upload Obfuscated Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: voicestats-obfuscated
+          path: voicestats.zip
+
+  release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: [build-full, build-obfuscated]
+
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: voicestats-${{ github.event.inputs.version_tag }}
+          name: "VoiceStats - ${{ github.event.inputs.version_tag }}"
+          body: |
+            ## Description
+            Download the plugin below!
+
+            - `voicestats.zip`: Obfuscated version
+            - `voicestats-full.zip`: Full source code
+          files: |
+            voicestats.zip
+            voicestats-full.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,104 @@
+name: Release GuildLocker
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: "Version Tag (e.g. 1.0.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-full:
+    name: Build Full Source
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout guildlocker branch
+        uses: actions/checkout@v7
+        with:
+          ref: guildlocker
+
+      - name: Build Full Source ZIP
+        run: |
+          mkdir -p full_staging/guildlocker
+          cp -r main.js src data full_staging/guildlocker
+          cd full_staging
+          zip -r ../guildlocker-full.zip guildlocker/
+
+      - name: Upload Full Source Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: guildlocker-full
+          path: guildlocker-full.zip
+
+  build-obfuscated:
+    name: Build Obfuscated
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout guildlocker branch
+        uses: actions/checkout@v7
+        with:
+          ref: guildlocker
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Install JavaScript Obfuscator
+        run: npm install -g javascript-obfuscator
+
+      - name: Build Obfuscated ZIP
+        run: |
+          mkdir -p obfuscated_staging/guildlocker
+          cp -r main.js src data obfuscated_staging/guildlocker
+
+          # Obfuscate main.js
+          javascript-obfuscator obfuscated_staging/guildlocker/main.js --output obfuscated_staging/guildlocker/main.js --compact true --control-flow-flattening true --dead-code-injection true --string-array true --string-array-encoding 'base64' --identifier-names-generator 'hexadecimal'
+
+          # Obfuscate all JS files in src
+          find obfuscated_staging/guildlocker/src -name "*.js" -exec javascript-obfuscator {} --output {} --compact true --control-flow-flattening true --dead-code-injection true --string-array true --string-array-encoding 'base64' --identifier-names-generator 'hexadecimal' \;
+
+          cd obfuscated_staging
+          zip -r ../guildlocker.zip guildlocker/
+
+      - name: Upload Obfuscated Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: guildlocker-obfuscated
+          path: guildlocker.zip
+
+  release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: [build-full, build-obfuscated]
+
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: guildlocker-${{ github.event.inputs.version_tag }}
+          name: "GuildLocker - ${{ github.event.inputs.version_tag }}"
+          body: |
+            ## Description
+            Download the plugin below!
+
+            - `guildlocker.zip`: Obfuscated version
+            - `guildlocker-full.zip`: Full source code
+          files: |
+            guildlocker.zip
+            guildlocker-full.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
