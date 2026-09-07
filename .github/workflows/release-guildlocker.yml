@@ -2,11 +2,6 @@ name: Release GuildLocker
 
 on:
   workflow_dispatch:
-    inputs:
-      version_tag:
-        description: "Version Tag (e.g. 1.0.0.0)"
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -15,12 +10,22 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
 
     steps:
       - name: Checkout guildlocker branch
         uses: actions/checkout@v7
         with:
           ref: guildlocker
+
+      - name: Read version from main.js
+        id: ver
+        run: |
+          v=$(grep -oE "version:[[:space:]]*'[^']*'" main.js | head -1 | sed -E "s/.*'([^']*)'.*/\1/")
+          if [ -z "$v" ]; then echo "::error::No version field found in main.js"; exit 1; fi
+          echo "::notice::Releasing guildlocker $v"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
 
       - name: Build ZIP
         run: |
@@ -49,8 +54,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: guildlocker-${{ github.event.inputs.version_tag }}
-          name: "GuildLocker - ${{ github.event.inputs.version_tag }}"
+          tag_name: guildlocker-${{ needs.build.outputs.version }}
+          name: "GuildLocker - ${{ needs.build.outputs.version }}"
           body: |
             ## Description
             Download the plugin below!
