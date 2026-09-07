@@ -1,0 +1,31 @@
+{
+    config: {
+        permissions: {
+            voicestats_command: "everyone"
+        },
+        period: "1w",
+        trackedChannels: [],
+        checkIntervalMinutes: 5,
+        accumulativeStats: false,
+        ghostPing: {
+            enabled: true,
+            role: null,
+            thresholdMinutes: 30
+        },
+        lang: {
+            statsEmbed: {
+                "title": "%custom_emoji_1% Voice Channel Stats — %period%",
+                "channelLine": "**%channel%** — %duration%",
+                "emptyLine": "No voice channels tracked yet."
+            },
+            commandReplies: {
+                periodEnded: {
+                    "description": "%custom_emoji_2% Period ended and stats have been reset."
+                },
+                previewPosted: {
+                    "description": "%custom_emoji_2% Preview posted, nothing was reset."
+                }
+            }
+        }
+    }
+}

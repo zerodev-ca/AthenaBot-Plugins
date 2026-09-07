@@ -1,0 +1,77 @@
+{
+  "permissions": {
+    "type": 10,
+    "name": "Permissions",
+    "description": "Permission level settings",
+    "value_schema": {
+      "voicestats_command": { "type": 0, "label": "Voicestats Permission Level", "autocomplete": ["everyone", "member", "management"] }
+    }
+  },
+  "period": {
+    "type": 0,
+    "name": "Tracking Period",
+    "description": "How often stats reset and post, e.g. 1h, 1d, 1w, 30d"
+  },
+  "trackedChannels": {
+    "type": 3,
+    "name": "Tracked Channels",
+    "description": "Voice channel IDs to track. Leave empty to track every voice channel"
+  },
+  "checkIntervalMinutes": {
+    "type": 1,
+    "name": "Check Interval (Minutes)",
+    "description": "How frequently the bot checks if the period has elapsed"
+  },
+  "accumulativeStats": {
+    "type": 2,
+    "name": "Accumulative Stats",
+    "description": "If enabled, stats never reset between periods and keep growing indefinitely",
+    "autocomplete": [true, false]
+  },
+  "ghostPing": {
+    "type": 10,
+    "name": "Ghost Ping",
+    "description": "Ping a role to draw attention to channels that saw real usage",
+    "value_schema": {
+      "enabled": { "type": 2, "label": "Enabled", "autocomplete": [true, false] },
+      "role": { "type": 0, "label": "Role ID" },
+      "thresholdMinutes": { "type": 1, "label": "Threshold (Minutes)", "autocomplete": [15, 30, 60] }
+    }
+  },
+  "lang": {
+    "type": 10,
+    "name": "Language",
+    "description": "Embed text shown for stats updates",
+    "value_schema": {
+      "statsEmbed": {
+        "type": 10,
+        "label": "Stats Embed",
+        "value_schema": {
+          "title": { "type": 0, "label": "Title (supports %period%)" },
+          "channelLine": { "type": 0, "label": "Per-Channel Line (supports %channel%, %duration%)" },
+          "emptyLine": { "type": 0, "label": "Empty State Line" }
+        }
+      },
+      "commandReplies": {
+        "type": 10,
+        "label": "Command Replies",
+        "value_schema": {
+          "periodEnded": {
+            "type": 10,
+            "label": "Period Ended",
+            "value_schema": {
+              "description": { "type": 0, "label": "Description" }
+            }
+          },
+          "previewPosted": {
+            "type": 10,
+            "label": "Preview Posted",
+            "value_schema": {
+              "description": { "type": 0, "label": "Description" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
