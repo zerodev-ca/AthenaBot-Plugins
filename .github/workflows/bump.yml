@@ -11,6 +11,7 @@ on:
           - qrcodes
           - guildlocker
           - voicestats
+          - zdlibrary
       part:
         description: "Which part to bump — version is major.minor.bugfix.oops"
         required: true
@@ -94,6 +95,7 @@ jobs:
             qrcodes)     name="QRCodes" ;;
             guildlocker) name="GuildLocker" ;;
             voicestats)  name="VoiceStats" ;;
+            zdlibrary)   name="ZDLibrary" ;;
             *)           name="$PLUGIN" ;;
           esac
           echo "display=$name" >> "$GITHUB_OUTPUT"
