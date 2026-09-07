@@ -24,12 +24,12 @@ jobs:
 
       - name: Build ZIP
         run: |
-          mkdir -p full_staging/guildlocker
-          cp -r main.js src data full_staging/guildlocker
-          cd full_staging
+          mkdir -p staging/guildlocker
+          cp -r main.js src data staging/guildlocker
+          cd staging
           zip -r ../guildlocker.zip guildlocker/
 
-      - name: Upload Full Source Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
           name: guildlocker
@@ -54,7 +54,6 @@ jobs:
           body: |
             ## Description
             Download the plugin below!
-            
             - `guildlocker.zip`
           files: |
             guildlocker.zip
