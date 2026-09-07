@@ -1,0 +1,12 @@
+{
+    config: {
+        lang: {
+            successful_toggle: {
+                "description": "%custom_emoji_28% Successfully toggled %action% %final%"
+            }
+        },
+        permissions: {
+            guildlocker: "management"
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+  "lang": {
+    "type": 10,
+    "name": "Language",
+    "description": "Embed text shown to users",
+    "children": {
+      "successful_toggle": {
+        "type": 10,
+        "name": "Successful Toggle Embed",
+        "description": "Shown after a lockdown is toggled on or off",
+        "children": {
+          "description": {
+            "type": 0,
+            "name": "Description",
+            "description": "Embed description text. Supports %action%, %final%, and other placeholders"
+          }
+        }
+      }
+    }
+  },
+  "permissions": {
+    "type": 10,
+    "name": "Permissions",
+    "description": "Permission level settings",
+    "children": {
+      "guildlocker": {
+        "type": 0,
+        "name": "Guildlocker Permission Level",
+        "description": "Permission level required to use /guildlocker"
+      }
+    }
+  }
+}
