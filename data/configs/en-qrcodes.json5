@@ -1,0 +1,24 @@
+{
+    "config": {
+        "permissions": {
+            "qrcode_command": "everyone"
+        },
+        "qrOptions": {
+            "margin": 4,
+            "scale": 15,
+            "roundedDots": true,
+            "color": {
+                "dark": "#000000",
+                "light": "#ffffff"
+            },
+            "errorCorrectionLevel": "H"
+        },
+        "lang": {
+            "errorInvalidData": "Failed to generate your QR code. Please make sure the provided data is valid.",
+            "successEmbed": {
+                "title": "QR Code Generated",
+                "description": "Here is your custom QR code for:\n`%data%`"
+            }
+        }
+    }
+}
