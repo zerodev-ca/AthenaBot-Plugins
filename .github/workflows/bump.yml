@@ -1,0 +1,124 @@
+name: Bump Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Which plugin to bump"
+        required: true
+        type: choice
+        options:
+          - qrcodes
+          - guildlocker
+          - voicestats
+      part:
+        description: "Which part to bump — version is major.minor.bugfix.oops"
+        required: true
+        default: oops
+        type: choice
+        options:
+          - major
+          - minor
+          - bugfix
+          - oops
+      publish_release:
+        description: "Also build and publish a release at the new version"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    name: Bump version in main.js
+    runs-on: ubuntu-latest
+    outputs:
+      old_version: ${{ steps.bump.outputs.old_version }}
+      new_version: ${{ steps.bump.outputs.new_version }}
+    steps:
+      - name: Checkout ${{ inputs.plugin }} branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.plugin }}
+
+      - name: Compute and write new version
+        id: bump
+        env:
+          PART: ${{ inputs.part }}
+        run: |
+          cur=$(grep -oE "version:[[:space:]]*'[^']*'" main.js | head -1 | sed -E "s/.*'([^']*)'.*/\1/")
+          if [ -z "$cur" ]; then echo "::error::No version field found in main.js"; exit 1; fi
+          IFS='.' read -r a b c d <<< "$cur"
+          a=${a:-0}; b=${b:-0}; c=${c:-0}; d=${d:-0}
+          case "$PART" in
+            major)  a=$((a+1)); b=0; c=0; d=0 ;;
+            minor)  b=$((b+1)); c=0; d=0 ;;
+            bugfix) c=$((c+1)); d=0 ;;
+            oops)   d=$((d+1)) ;;
+          esac
+          new="$a.$b.$c.$d"
+          sed -i -E "0,/version:[[:space:]]*'[^']*'/ s//version: '$new'/" main.js
+          echo "::notice::Bumped $PART: $cur -> $new"
+          echo "old_version=$cur" >> "$GITHUB_OUTPUT"
+          echo "new_version=$new" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push
+        env:
+          NEW: ${{ steps.bump.outputs.new_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add main.js
+          git commit -m "chore(${{ inputs.plugin }}): bump version to $NEW"
+          git push origin HEAD:${{ inputs.plugin }}
+
+  release:
+    name: Publish release
+    needs: bump
+    if: ${{ inputs.publish_release }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ inputs.plugin }} branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.plugin }}
+
+      - name: Resolve display name
+        id: meta
+        env:
+          PLUGIN: ${{ inputs.plugin }}
+        run: |
+          case "$PLUGIN" in
+            qrcodes)     name="QRCodes" ;;
+            guildlocker) name="GuildLocker" ;;
+            voicestats)  name="VoiceStats" ;;
+            *)           name="$PLUGIN" ;;
+          esac
+          echo "display=$name" >> "$GITHUB_OUTPUT"
+
+      - name: Build ZIP
+        env:
+          PLUGIN: ${{ inputs.plugin }}
+        run: |
+          mkdir -p staging/$PLUGIN
+          cp -r main.js src data staging/$PLUGIN
+          cd staging
+          zip -r ../$PLUGIN.zip $PLUGIN/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.plugin }}-${{ needs.bump.outputs.new_version }}
+          name: "${{ steps.meta.outputs.display }} - ${{ needs.bump.outputs.new_version }}"
+          body: |
+            ## Description
+            Download the plugin below!
+            - `${{ inputs.plugin }}.zip`
+          files: |
+            ${{ inputs.plugin }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
