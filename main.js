@@ -27,7 +27,7 @@ module.exports = class ZDLibrary extends plugin {
 		this.heart.core.console.log(this.heart.core.console.type.startup, '', this.heart.core.console.color.console.foreground.magenta);
 		this.heart.core.discord.core.handler.manager.get('zdlibrary').generateAscii(this.getName()).split('\n').forEach(l => this.heart.core.console.log(this.heart.core.console.type.startup, l, this.heart.core.console.color.console.foreground.yellow));
 		this.heart.core.console.log(this.heart.core.console.type.startup, '', this.heart.core.console.color.console.foreground.magenta);
-		this.heart.core.console.log(this.heart.core.console.type.startup, 'Discord:    https://discord.gg/zerodev', this.heart.core.console.color.console.foreground.magenta);
+		this.heart.core.console.log(this.heart.core.console.type.startup, 'Discord:    https://discord.zerodev.ca', this.heart.core.console.color.console.foreground.magenta);
 		this.heart.core.console.log(this.heart.core.console.type.startup, 'BuiltByBit: https://builtbybit.com/zerodev', this.heart.core.console.color.console.foreground.magenta);
 		this.heart.core.console.log(this.heart.core.console.type.startup, 'Zero Shop:  https://zerodev.ca', this.heart.core.console.color.console.foreground.magenta);
 		this.heart.core.console.log(this.heart.core.console.type.startup, '', this.heart.core.console.color.console.foreground.magenta);
