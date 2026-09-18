@@ -9,7 +9,7 @@ permissions:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker, dokploy]
     outputs:
       version: ${{ steps.ver.outputs.version }}
 
@@ -42,7 +42,7 @@ jobs:
 
   release:
     name: Publish Release
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker, dokploy]
     needs: [build]
 
     steps:

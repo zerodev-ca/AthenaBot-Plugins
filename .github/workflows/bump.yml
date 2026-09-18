@@ -34,7 +34,7 @@ permissions:
 jobs:
   bump:
     name: Bump version in main.js
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker, dokploy]
     outputs:
       old_version: ${{ steps.bump.outputs.old_version }}
       new_version: ${{ steps.bump.outputs.new_version }}
@@ -79,7 +79,7 @@ jobs:
     name: Publish release
     needs: bump
     if: ${{ inputs.publish_release }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker, dokploy]
     steps:
       - name: Checkout ${{ inputs.plugin }} branch
         uses: actions/checkout@v7
